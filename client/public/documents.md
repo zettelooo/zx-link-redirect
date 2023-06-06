@@ -1,1 +1,1 @@
-Your extension documentation in Markdown format.
+Redirect to links when public card is opened.
