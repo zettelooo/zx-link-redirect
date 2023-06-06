@@ -1,7 +1,6 @@
-# Zettel Extension Seed
+# Zettel Module - Link Redirect
 
-This is a seed project to speed-up developing extensions for [Zettel](https://app.zettel.ooo).
-You can read more about the platform [here](http://zettel.ooo).
+Masks the links.
 
 The repository consists of three projects:
 
@@ -60,7 +59,5 @@ The repository consists of three projects:
      ```sh
      shared$ npm run update
      ```
-
-All projects are filled with some dummy implementations to show-case how to setup things, feel free to modify it, or even start your own projects following the prctices used in this seed project.
 
 For more information, please [contact the development](mailto:ahs502@gmail.com) team.
