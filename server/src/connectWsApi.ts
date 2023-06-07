@@ -4,7 +4,7 @@ import { ZETTEL_EXTENSION_ACCESS_KEY, ZETTEL_TARGET_ENVIRONMENT } from './consta
 import { extractCardExtensionData } from './extractCardExtensionData'
 import { restApiClient } from './restApiClient'
 
-export function connectWsApi(): void {
+export function connectWsApi(): ZettelServices.Extension.Ws.GetUpdates<PageExtensionData, CardExtensionData> {
   const connection = new ZettelServices.Extension.Ws.GetUpdates<PageExtensionData, CardExtensionData>({
     extensionWsApi: { targetEnvironment: ZETTEL_TARGET_ENVIRONMENT },
     extensionAccessKey: ZETTEL_EXTENSION_ACCESS_KEY,
@@ -74,4 +74,5 @@ export function connectWsApi(): void {
       }
     },
   })
+  return connection
 }

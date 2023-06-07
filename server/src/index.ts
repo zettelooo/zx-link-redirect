@@ -1,3 +1,5 @@
 import { connectWsApi } from './connectWsApi'
+import { startServer } from './startServer'
 
-connectWsApi()
+const connection = connectWsApi()
+startServer(connection)
