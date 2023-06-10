@@ -1,13 +1,20 @@
-import { ZettelTypes } from '@zettelooo/api-types'
 import { ZettelExtensions } from '@zettelooo/extension-api'
-import { CardExtensionData } from 'shared'
+import { CardExtensionData, PageExtensionData, refineUrl } from 'shared'
 
 export const registerComposer: ZettelExtensions.Helper<
   'pagePanel',
-  'api' | 'activated' | 'signedIn' | 'pagePanel',
+  'activated' | 'signedIn' | 'pagePanel',
   [],
-  void
-> = function ({ api, activatedApi, signedInApi, pagePanelApi }) {
+  void,
+  PageExtensionData,
+  CardExtensionData
+> = function ({ activatedApi, signedInApi, pagePanelApi }) {
+  this.register(
+    pagePanelApi.registry.status(() => ({
+      hideDefaultComposer: true,
+    }))
+  )
+
   const composerRegistration = this.register(
     pagePanelApi.registry.composer<{
       readonly linkTitle: string
@@ -59,40 +66,12 @@ export const registerComposer: ZettelExtensions.Helper<
                 linkUrlError: undefined,
                 disabled: true,
               }))
-              const blocks: ZettelTypes.Extension.Entity.Block[] = []
-              if (currentContext.state.linkTitle) {
-                blocks.push({
-                  type: ZettelTypes.Model.Block.Type.Header,
-                  id: api.generateId(),
-                  text: currentContext.state.linkTitle,
-                  annotations: [],
-                  styleGroups: [],
-                  level: 6,
-                  extensionData: {},
-                })
-              }
-              blocks.push({
-                type: ZettelTypes.Model.Block.Type.Paragraph,
-                id: api.generateId(),
-                text: currentContext.state.linkUrl,
-                annotations: [
-                  {
-                    type: ZettelTypes.Model.Block.StyledText.Annotation.Type.PlainLink,
-                    from: 0,
-                    to: currentContext.state.linkUrl.length,
-                    url: currentContext.state.linkUrl,
-                  },
-                ],
-                styleGroups: [],
-                extensionData: {},
-              })
-              const card = await signedInApi.access.createCard<CardExtensionData>({
+              const linkTitle = currentContext.state.linkTitle ?? ''
+              const linkUrl = refineUrl(currentContext.state.linkUrl)
+              const card = await signedInApi.access.createCard({
                 pageId: pagePanelApi.target.pageId,
-                blocks,
-                extensionData: {
-                  parsed: true,
-                  url: currentContext.state.linkUrl,
-                },
+                text: `${linkTitle ? `Link title is ${JSON.stringify(linkTitle)}\n` : ''}Link URL is ${linkUrl}`,
+                extensionData: { parsed: true, url: linkUrl },
               })
               const cardPublicUrl = activatedApi.access.getCardPublicUrl(card.id)
               activatedApi.access.copyTextToClipboard(cardPublicUrl)

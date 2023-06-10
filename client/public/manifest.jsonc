@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@zettelooo/extension-api/dist/manifest-json-schema.json",
 
   "appId": "link-redirect",
-  "version": "2.0.2",
+  "version": "2.0.6",
   "name": "Link Redirect",
   "description": "Redirect to links when public card is opened.",
   "aiDescription": "Mask a URL with a Zettel public URL. It redirects a shortened URL to any other URL of your choice.",

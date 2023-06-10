@@ -4,7 +4,7 @@ import { registerComposer } from './registerComposer'
 import { registerQuickAction } from './registerQuickAction'
 import { whileCard } from './whileCard'
 
-void ((window as ZettelExtensions.WindowWithStarter).$starter = function (api) {
+void ((window as ZettelExtensions.WindowWithStarter<PageExtensionData, CardExtensionData>).$starter = function (api) {
   this.while('activated', function ({ activatedApi }) {
     this.while('signedIn', function ({ signedInApi }) {
       this.while('pagePanel', function ({ pagePanelApi }) {
@@ -23,10 +23,10 @@ void ((window as ZettelExtensions.WindowWithStarter).$starter = function (api) {
 
         this.register(
           pagePanelApi.watch(
-            data => data.page.extensionData as PageExtensionData,
+            data => data.page.extensionData,
             newPageExtensionData => {
               if (newPageExtensionData?.enabled) {
-                signedInApi.access.setPageExtensionData<PageExtensionData>(pagePanelApi.target.pageId, undefined)
+                signedInApi.access.setPageExtensionData(pagePanelApi.target.pageId, undefined)
                 activate(newPageExtensionData.command)
               }
             },
@@ -38,28 +38,27 @@ void ((window as ZettelExtensions.WindowWithStarter).$starter = function (api) {
 
         registerQuickAction.bind(this)({ api, pagePanelApi })
 
-        registerComposer.bind(this)({ api, activatedApi, signedInApi, pagePanelApi })
+        registerComposer.bind(this)({ activatedApi, signedInApi, pagePanelApi })
 
-        whileCard.bind(this)({ api, activatedApi })
+        whileCard.bind(this)({ activatedApi })
       })
     })
 
     this.while('publicPageView', function ({ publicPageViewApi }) {
       if (!this.scopes.includes(ZettelExtensions.Scope.Page)) return // TODO: This is redundant and should be removed later
 
-      whileCard.bind(this)({ api, activatedApi })
+      whileCard.bind(this)({ activatedApi })
     })
 
     this.while('publicCardView', function ({ publicCardViewApi }) {
       if (!this.scopes.includes(ZettelExtensions.Scope.Page)) return // TODO: This is redundant and should be removed later
 
-      const cardExtensionData = publicCardViewApi.data.card.extensionData as CardExtensionData
-      if (cardExtensionData?.url) {
-        window.location.href = cardExtensionData.url.match(/^https?:\/\//i)
-          ? cardExtensionData.url
-          : `https://${cardExtensionData.url}`
+      if (publicCardViewApi.data.card.extensionData?.url) {
+        window.location.href = publicCardViewApi.data.card.extensionData.url.match(/^https?:\/\//i)
+          ? publicCardViewApi.data.card.extensionData.url
+          : `https://${publicCardViewApi.data.card.extensionData.url}`
       } else {
-        whileCard.bind(this)({ api, activatedApi })
+        whileCard.bind(this)({ activatedApi })
       }
     })
   })

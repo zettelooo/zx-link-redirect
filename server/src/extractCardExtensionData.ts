@@ -1,14 +1,11 @@
 import { ZettelTypes } from '@zettelooo/api-types'
-import { CardExtensionData } from 'shared'
+import { CardExtensionData, refineUrl } from 'shared'
 import { openAiApi } from './openAiApi'
 
 export async function extractCardExtensionData(
-  card: Pick<ZettelTypes.Model.Card, 'blocks'>
+  card: Pick<ZettelTypes.Extension.Model.Card<CardExtensionData>, 'text'>
 ): Promise<CardExtensionData> {
-  const cardText = card.blocks
-    .map(block => (block.type === ZettelTypes.Model.Block.Type.Attachment ? '' : block.text))
-    .flatMap(blockText => blockText.split('\n'))
-    .join(' ')
+  const cardText = card.text.split('\n').join(' ')
 
   const chatCompletion = await openAiApi.createChatCompletion({
     model: 'gpt-3.5-turbo',
@@ -57,26 +54,7 @@ If a link URL is not explicitly mentioned, just respond with a '-' (dash) charac
       return current
     }, {} as Partial<Record<string, string>>)
 
-  const [url] =
-    properties['URL'] && properties['URL'] !== '-'
-      ? [properties['URL']]
-      : card.blocks.flatMap(block =>
-          block.type === ZettelTypes.Model.Block.Type.Attachment || block.type === ZettelTypes.Model.Block.Type.Code
-            ? []
-            : block.annotations.flatMap(annotation =>
-                annotation.type === ZettelTypes.Model.Block.StyledText.Annotation.Type.HyperLink ||
-                annotation.type === ZettelTypes.Model.Block.StyledText.Annotation.Type.PlainLink
-                  ? [annotation.url]
-                  : []
-              )
-        )
+  const url = properties['URL'] && properties['URL'] !== '-' ? refineUrl(properties['URL']) : null
 
-  return url
-    ? {
-        parsed: true,
-        url: url.match(/^https?:\/\//i) ? url : `https://${url}`,
-      }
-    : {
-        parsed: true,
-      }
+  return url ? { parsed: true, url } : { parsed: true }
 }

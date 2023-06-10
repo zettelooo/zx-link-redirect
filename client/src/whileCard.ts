@@ -1,12 +1,14 @@
 import { ZettelExtensions } from '@zettelooo/extension-api'
-import { CardExtensionData } from 'shared'
+import { CardExtensionData, PageExtensionData } from 'shared'
 
 export const whileCard: ZettelExtensions.Helper<
   'pagePanel' | 'publicPageView' | 'publicCardView',
-  'api' | 'activated',
+  'activated',
   [],
-  void
-> = function ({ api, activatedApi }) {
+  void,
+  PageExtensionData,
+  CardExtensionData
+> = function ({ activatedApi }) {
   this.while('card', function ({ cardApi }) {
     const extendedHtmlContentRegistration = this.register(
       cardApi.registry.extendedHtmlContent<CardExtensionData>(() => ({
@@ -72,14 +74,18 @@ export const whileCard: ZettelExtensions.Helper<
                 },
               },
         position: 'bottom',
-      }))
+        originalContent: 'better hide',
+      })),
+      {
+        initiallyInactive: !cardApi.data.card.extensionData?.parsed || !cardApi.data.card.extensionData.url,
+      }
     )
 
     this.register(
       cardApi.watch(
-        data => data.card.extensionData as CardExtensionData,
+        data => data.card.extensionData,
         newCardExtensionData => {
-          if (newCardExtensionData?.parsed) {
+          if (newCardExtensionData?.parsed && newCardExtensionData.url) {
             if (extendedHtmlContentRegistration.isActive()) {
               extendedHtmlContentRegistration.reference.current?.setState(newCardExtensionData)
             } else {
